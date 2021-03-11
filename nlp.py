@@ -11,9 +11,7 @@ nlp = en_core_web_lg.load()  # load spacy library
 #tokenizer = nlp.Defaults.create_tokenizer(nlp)
 
 def wordTypeCheck(word):
-    # wordToken = nlp(word)[0].__call__
-    #return (tokenizer(word)[0].orth_.pos_ == "PROPN" or tokenizer(word)[0].orth_.pos_ == "NOUN")
-    return True
+    return (nlp(word)[0].pos_ == "PROPN" or nlp(word)[0].pos_ == "NOUN")
 
 def getWordScores(str, repeatWeight):
     str = str.lower()
@@ -49,19 +47,24 @@ def summarizeText(str, numSentences, repeatWeight, usedWeight):
 
     scoreDic = getWordScores(str, repeatWeight)
 
-    finishedSentences = []
+    finishedIndices = []
 
     for iter in range(numSentences):
         maxScore = 0
-        maxSentence = ""
-        for sentence in sentenceList:
+        maxIndex = 0
+        for s in range(len(sentenceList)):
+            sentence = sentenceList[s]
             if sentenceScore(sentence, scoreDic) > maxScore:
                 maxScore = sentenceScore(sentence, scoreDic)
-                maxSentence = sentence
-        finishedSentences.append(maxSentence)
-        scoreDic = updateWordScores(scoreDic, maxSentence, usedWeight)
+                maxIndex = s
+        finishedIndices.append(maxIndex)
+        scoreDic = updateWordScores(scoreDic, sentenceList[maxIndex], usedWeight)
         #should inherently avoid repeating words since every word would be negative
 
+    finishedIndices.sort()
+    finishedSentences = []
+    for index in finishedIndices:
+        finishedSentences.append(sentenceList[index])
 
     return finishedSentences
     #finishedSentences contains the most important sentences but not sorted: we should probably sort them somehow
