@@ -11,7 +11,7 @@ class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
 
-        self.title = "Sprint 1 Demo"
+        self.setWindowTitle("Sprint 1 Demo")
         self.BuildWindow()
 
     def BuildWindow(self):
@@ -44,10 +44,10 @@ class MainWindow(QMainWindow):
         filename, _ = QFileDialog.getOpenFileName(self, "Open file", "",
                                                   "Image file (*.jpg *.png)")
         pixmap = QPixmap(filename)
-        if pixmap.height() > 750:
-            pixmap = pixmap.scaledToHeight(750)
-        if pixmap.width() > 750:
-            pixmap = pixmap.scaledToHeight(750)
+        if pixmap.height() > 500:
+            pixmap = pixmap.scaledToHeight(500)
+        if pixmap.width() > 500:
+            pixmap = pixmap.scaledToWidth(500)
 
         self.label.setPixmap(pixmap)
         self.resize(pixmap.width(), pixmap.height())
@@ -58,8 +58,12 @@ class MainWindow(QMainWindow):
     def submitText(self):
         """Calls NLP algo"""
         self.summaryText.clear()
-        summary = summarizeText(self.inputText.toPlainText())
-        self.summaryText.setText(summary)
+        summary = summarizeText(self.inputText.toPlainText(), 3, 5, -3)
+        
+        newText = ""
+        for sentence in summary:
+            newText += sentence + "\n"
+        self.summaryText.setText(newText)
 
 
 if __name__ == "__main__":
