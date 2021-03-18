@@ -10,24 +10,29 @@ warnings.filterwarnings('ignore')  # ignore warnings from jupyter notebooks/spac
 nlp = en_core_web_lg.load()  # load spacy library
 #tokenizer = nlp.Defaults.create_tokenizer(nlp)
 
-def wordTypeCheck(word):
-    return (nlp(word)[0].pos_ == "PROPN" or nlp(word)[0].pos_ == "NOUN")
-
-def getWordScores(str, repeatWeight):
+def getWordScores(str, repeatWeight, keyWords, keyWordWeight):
     str = str.lower()
-    for c in string.punctuation:
-        str = str.replace(c, "")
-    wordList = str.split(" ")
+    doc = nlp(str)
+
     scoreDic = {}
-    for word in wordList:
-        if wordTypeCheck(word):
-            scoreDic[word] = scoreDic.get(word, 0) + repeatWeight
+    for token in doc:
+        if token.text in keyWords:
+            scoreDic[token.text] = keyWordWeight
+
+        elif token.pos_ == "PROPN" or token.pos_ == "NOUN":
+            scoreDic[token.text] = scoreDic.get(token.text, 0) + repeatWeight
+        else:
+            scoreDic[token.text] = 0
     return scoreDic
 
+
 def updateWordScores(scoreDic, usedSentence, usedScore):
-    for usedWord in usedSentence.split():
-        if wordTypeCheck(usedWord):
-            scoreDic[usedWord] = usedScore
+    for word in usedSentence.split(" "):
+        try:
+            if scoreDic[word.lower()] > 0:
+                scoreDic[word.lower()] -= usedScore
+        except KeyError:
+            continue
     return scoreDic
 
 def sentenceScore(sentence, scoreDic):
@@ -35,19 +40,23 @@ def sentenceScore(sentence, scoreDic):
     words = sentence.split()
     averaging = 0
     for word in words:
-        if wordTypeCheck(word):
-            averaging += 1
-            score += scoreDic.get(word, 0)
+        try:
+            if scoreDic[word.lower()] != 0:
+                averaging += 1
+                score += scoreDic.get(word.lower(), 0)
+        except KeyError:
+            continue
+
     if averaging==0:
         return 0
     return score/averaging
 
 #repeatWeight should be positive, usedWeight should be negative
-def summarizeText(str, numSentences, repeatWeight, usedWeight):
+def summarizeText(str, numSentences, repeatWeight, usedWeight, keyWords, keyWordWeight):
     str = filterString(str)
     sentenceList = splitPassage(str)
 
-    scoreDic = getWordScores(str, repeatWeight)
+    scoreDic = getWordScores(str, repeatWeight, keyWords, keyWordWeight)
 
     finishedIndices = []
 
@@ -55,13 +64,15 @@ def summarizeText(str, numSentences, repeatWeight, usedWeight):
         maxScore = 0
         maxIndex = 0
         for s in range(len(sentenceList)):
+            if s in finishedIndices: # prevents repetition
+                continue
             sentence = sentenceList[s]
-            if sentenceScore(sentence, scoreDic) > maxScore:
-                maxScore = sentenceScore(sentence, scoreDic)
+            score = sentenceScore(sentence, scoreDic)
+            if score > maxScore:
+                maxScore = score
                 maxIndex = s
         finishedIndices.append(maxIndex)
         scoreDic = updateWordScores(scoreDic, sentenceList[maxIndex], usedWeight)
-        #should inherently avoid repeating words since every word would be negative
 
     finishedIndices.sort()
     finishedSentences = []
@@ -78,7 +89,8 @@ def summarizeText(str, numSentences, repeatWeight, usedWeight):
 # print(summarizeText(str1, 3, 5, -3))
 # print(summarizeText(str2, 3, 5, -3))
 with open("Sample Texts/pomo.txt", "r", encoding="utf8") as f:
-    summary = summarizeText(f.read(), 10, 1, -1)
+    keyWords = ["discourse", "art"]
+    summary = summarizeText(f.read(), 10, 1, -1, keyWords, 5)
     with open("Summaries/pomosummary.txt", "w", encoding="utf8") as g:
         for sentence in summary:
             g.write(sentence + "\n")
