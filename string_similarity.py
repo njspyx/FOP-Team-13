@@ -13,7 +13,7 @@ def filterString(str):
 # print(filterString(str))
 
 def splitPassage(str):
-    return re.split('\. |\? |\! ', str)
+    return re.split('\.|\?|\!', str)
 
 
 # print(splitPassage(filterString(str)))
