@@ -2,8 +2,8 @@ import en_core_web_sm
 import warnings
 import spacy
 from spacy import tokenizer
-from string_similarity import filterString
-from string_similarity import splitPassage
+from main.string_similarity import filterString
+from main.string_similarity import splitPassage
 import string
 
 warnings.filterwarnings('ignore')  # ignore warnings from jupyter notebooks/spacy

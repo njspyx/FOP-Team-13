@@ -1,13 +1,14 @@
-from PIL import Image
+from PIL import Image, ImageFilter
 import pytesseract
 
 
-def imageToText(filename):
+def imageToText(file):
     """Very basic OCR"""
 
     # For Windows:
-    pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+    # pytesseract.pytesseract.tesseract_cmd = "C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 
-    image = Image.open(filename)
+    image = Image.open(file)
+    image.filter(ImageFilter.SHARPEN)
     text = pytesseract.image_to_string(image)
     return text
