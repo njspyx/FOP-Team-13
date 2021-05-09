@@ -2,8 +2,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QPixmap
 import sys
 
-from nlp import summarizeText
-from ocr import imageToText
+from main.nlp import summarizeText
+from main.ocr import imageToText
 
 
 class MainWindow(QMainWindow):

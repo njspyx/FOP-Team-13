@@ -21,7 +21,7 @@ def JSTORWordLookup(wordList, numArticles): #assumes they are already set
     bestArticles = sorted(frequencyChart, key=frequencyChart.get, reverse=True)
     for article in range(numArticles):
         print(bestArticles[article])
-        print(fileInfo[bestArticles[article]][1])
+        print(fileInfo[bestArticles[article]][2])
 
 
 wordList = ["beetle", "bicycle", "directions", "notes"]
