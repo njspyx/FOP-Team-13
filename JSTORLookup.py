@@ -3,9 +3,11 @@ import time
 
 with open("fileInfo.json", "r") as rfi:
     fileInfo = json.load(rfi)
+rfi.close()
 
 with open("wordIndex.json", "r") as rwi:
     wordIndex = json.load(rwi)
+rwi.close()
 
 def JSTORWordLookup(wordList, numArticles): #assumes they are already set
     indexArrays = []
@@ -20,9 +22,50 @@ def JSTORWordLookup(wordList, numArticles): #assumes they are already set
 
     bestArticles = sorted(frequencyChart, key=frequencyChart.get, reverse=True)
     for article in range(numArticles):
-        print(bestArticles[article])
-        print(fileInfo[bestArticles[article]][1])
+        print("Index of paper: " + str(bestArticles[article]))
+        print("Number of word appearances: " + str(frequencyChart[bestArticles[article]]))
+        print("File name: " + fileInfo[bestArticles[article]][0])
+        try:
+            print("Title: " + fileInfo[bestArticles[article]][1])
+        except TypeError:
+            print("No Title")
 
+        try:
+            print("URL: " + fileInfo[bestArticles[article]][2])
+        except TypeError:
+            print("No URL")
 
-wordList = ["beetle", "bicycle", "directions", "notes"]
-JSTORWordLookup(wordList, 50)
+        try:
+            print("Abstract: " + fileInfo[bestArticles[article]][3])
+        except TypeError:
+            print("No Abstract")
+
+        try:
+            print("Authors: ", end="")
+            authorList = fileInfo[bestArticles[article]][4]
+            numAuthors = len(authorList)
+            for author in range(numAuthors):
+                if author == numAuthors-1:
+                    print(authorList[author])
+                else:
+                    print(authorList[author], end=", ")
+        except TypeError:
+            print("No Author")
+        dateInfo = fileInfo[bestArticles[article]][5]
+        try:
+            print("Day is " + dateInfo[0], end=", ")
+        except:
+            pass
+        try:
+            print("Month is " + dateInfo[1], end=", ")
+        except:
+            pass
+        try:
+            print("Year is " + dateInfo[2])
+        except:
+            pass
+        print()
+
+wordList = ["double", "slit", "electron", "quantum"]
+JSTORWordLookup(wordList,10)
+

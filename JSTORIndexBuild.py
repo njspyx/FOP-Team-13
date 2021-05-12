@@ -7,7 +7,7 @@ import re
 from tqdm import tqdm
 import json
 
-jstorDir = "C:\\Users\\phill\\Documents\\Blair 2020-2021\\Future of Programming\\Note Taking App\\JSTOR Database"
+jstorDir = "JSTOR Database" # must download this directory
 
 def filterLetters(str):
     return re.sub("[^a-zA-Z]+", "", str.lower())
@@ -24,16 +24,27 @@ def indexJSTORFiles(jstorDir):
 
         fullPath = jstorDir+"\\"+fileName
         if fileName.startswith("book"):
-            title = bookInfo(fullPath)
+            title = bookTitle(fullPath)
             abstract = bookAbstract(fullPath)
-        elif fileName.startswith("journal"):
-            title = journalInfo(fullPath)
-            abstract = journalAbstract(fullPath)
-        elif fileName.startswith("research"):
-            title = researchInfo(fullPath)
-            abstract = researchAbstract(fullPath)
+            author = bookAuthor(fullPath)
+            url = bookURL(fullPath)
+            date = bookDate(fullPath)
 
-        fileInfo.append((fileName, title, abstract))
+        elif fileName.startswith("journal"):
+            title = journalTitle(fullPath)
+            abstract = journalAbstract(fullPath)
+            author = journalAuthor(fullPath)
+            url = journalURL(fullPath)
+            date = journalDate(fullPath)
+
+        elif fileName.startswith("research"):
+            title = researchTitle(fullPath)
+            abstract = researchAbstract(fullPath)
+            author = researchAuthor(fullPath)
+            url = researchURL(fullPath)
+            date = researchDate(fullPath)
+
+        fileInfo.append((fileName, title, url, abstract, author, date))
 
         if title != None:
             for word in title.split(" "):
@@ -59,7 +70,7 @@ def indexJSTORFiles(jstorDir):
     with open("wordIndex.json", "w") as wi:
         json.dump(wordIndex, wi)
 
-def bookInfo(path):
+def bookTitle(path):
     try:
         tree = ET.parse(path)
         root = tree.getroot()
@@ -70,7 +81,7 @@ def bookInfo(path):
     except IndexError:
         return None
 
-def journalInfo(path):
+def journalTitle(path):
     try:
         tree = ET.parse(path)
         root = tree.getroot()
@@ -82,7 +93,7 @@ def journalInfo(path):
     except IndexError:
         return None
 
-def researchInfo(path):
+def researchTitle(path):
     try:
         tree = ET.parse(path)
         root = tree.getroot()
@@ -119,5 +130,159 @@ def researchAbstract(path):
     except IndexError:
         return None
 
-indexJSTORFiles(jstorDir)
+def bookAuthor(path):
+    names = []
+    try:
+        tree = ET.parse(path)
+        root = tree.getroot()
+        meta = root.findall("book-meta")[0]
+        contrib = meta.findall("contrib-group")[0]
+        for author in contrib.iter("contrib"):
+            name = author.findall("name")[0]
+            front = name.findall("given-names")[0].text
+            sur = name.findall("surname")[0].text
+            names.append(front + " " + sur)
+        return names
+    except:
+        return None
 
+def journalAuthor(path):
+    names = []
+    try:
+        tree = ET.parse(path)
+        root = tree.getroot()
+        front = root.findall("front")[0]
+        meta = front.findall("article-meta")[0]
+        contrib = meta.findall("contrib-group")[0]
+        for author in contrib.iter("contrib"):
+            name = author.findall("string-name")[0]
+            front = name.findall("given-names")[0].text
+            sur = name.findall("surname")[0].text
+            names.append(front + " " + sur)
+        return names
+    except:
+        return None
+
+def researchAuthor(path):
+    names = []
+    try:
+        tree = ET.parse(path)
+        root = tree.getroot()
+        meta = root.findall("book-meta")[0]
+        contrib = meta.findall("contrib-group")[0]
+        for author in contrib.iter("contrib"):
+            name = author.findall("name")[0]
+            front = name.findall("given-names")[0].text
+            sur = name.findall("surname")[0].text
+            names.append(front + " " + sur)
+        return names
+    except:
+        return None
+
+def bookURL(path):
+    try:
+        tree = ET.parse(path)
+        root = tree.getroot()
+        meta = root.findall("book-meta")[0]
+        uri = meta.findall("self-uri")[0]
+        return list(uri.attrib.values())[0]
+
+    except IndexError:
+        return None
+
+
+def journalURL(path):
+    try:
+        tree = ET.parse(path)
+        root = tree.getroot()
+        front = root.findall("front")[0]
+        meta = front.findall("article-meta")[0]
+        uri = meta.findall("self-uri")[0]
+        return list(uri.attrib.values())[0]
+
+    except IndexError:
+        return None
+
+def researchURL(path):
+    try:
+        tree = ET.parse(path)
+        root = tree.getroot()
+        meta = root.findall("book-meta")[0]
+        uri = meta.findall("self-uri")[0]
+        return list(uri.attrib.values())[0]
+
+    except IndexError:
+        return None
+
+def bookDate(path): # order is day month year
+    try:
+        tree = ET.parse(path)
+        root = tree.getroot()
+        meta = root.findall("book-meta")[0]
+        pubDate = meta.findall("pub-date")[0]
+        try:
+            day = pubDate.find("day").text
+        except:
+            day = None
+        try:
+            month = pubDate.find("month").text
+        except:
+            month = None
+        try:
+            year = pubDate.find("year").text
+        except:
+            year = None
+        return [day, month, year]
+
+    except IndexError:
+        return None
+
+def journalDate(path):
+    try:
+        tree = ET.parse(path)
+        root = tree.getroot()
+        front = root.findall("front")[0]
+        meta = front.findall("article-meta")[0]
+        pubDate = meta.findall("pub-date")[0]
+        try:
+            day = pubDate.find("day").text
+        except:
+            day = None
+        try:
+            month = pubDate.find("month").text
+        except:
+            month = None
+        try:
+            year = pubDate.find("year").text
+        except:
+            year = None
+        return [day, month, year]
+    except IndexError:
+        return None
+
+
+def researchDate(path):
+    try:
+        tree = ET.parse(path)
+        root = tree.getroot()
+        meta = root.findall("book-meta")[0]
+        pubDate = meta.findall("pub-date")[0]
+        try:
+            day = pubDate.find("day").text
+        except:
+            day = None
+        try:
+            month = pubDate.find("month").text
+        except:
+            month = None
+        try:
+            year = pubDate.find("year").text
+        except:
+            year = None
+        return [day, month, year]
+
+    except IndexError:
+        return None
+
+
+indexJSTORFiles(jstorDir)
