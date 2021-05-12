@@ -30,6 +30,7 @@ def JSTORWordLookup(wordList, numArticles): #assumes they are already set
         except TypeError:
             print("No Title")
 
+
         try:
             print("URL: " + fileInfo[bestArticles[article]][2])
         except TypeError:
